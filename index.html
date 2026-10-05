@@ -218,7 +218,7 @@ td.name{min-width:150px}
     <div class="tablebox">
       <table id="zones">
         <thead><tr>
-          <th data-k="z" data-t="s">권역<span class="arw">▾</span></th><th data-k="tracked">추적 빌딩<span class="arw">▾</span></th><th data-k="vac">공실 보유<span class="arw">▾</span></th><th data-k="a1"><span id="thA1">공실</span><span class="arw">▾</span></th><th data-k="a2"><span id="thA2">공실</span><span class="arw">▾</span></th><th data-k="net">순증감(평)<span class="arw">▾</span></th><th data-k="nNew">신규 공실<span class="arw">▾</span></th><th data-k="nGone">소진<span class="arw">▾</span></th><th data-k="rcN">호가 변동<span class="arw">▾</span></th><th data-k="rent">임대료 중앙값<span class="arw">▾</span></th><th data-k="noc" class="noc">NOC 중앙값<span class="arw">▾</span></th><th data-k="enoc" class="noc" id="thZE">E.NOC 중앙값<span class="arw">▾</span></th><th data-k="pre">선임대(준공 전)<span class="arw">▾</span></th>
+          <th data-k="z" data-t="s">권역<span class="arw">▾</span></th><th data-k="tracked">추적 빌딩<span class="arw">▾</span></th><th data-k="vac">공실 보유<span class="arw">▾</span></th><th data-k="a1"><span id="thA1">공실</span><span class="arw">▾</span></th><th data-k="a2"><span id="thA2">공실</span><span class="arw">▾</span></th><th data-k="net">순증감(평)<span class="arw">▾</span></th><th data-k="nNew">신규 공실<span class="arw">▾</span></th><th data-k="nGone">소진<span class="arw">▾</span></th><th data-k="rcN">호가 변동<span class="arw">▾</span></th><th data-k="rent">임대료 중앙값<span class="arw">▾</span></th><th data-k="noc" class="noc">NOC 중앙값<span class="arw">▾</span></th><th data-k="pre">선임대(준공 전)<span class="arw">▾</span></th>
         </tr></thead>
         <tbody></tbody>
       </table>
@@ -594,7 +594,6 @@ td.name{min-width:150px}
         '<td><span class="rc">' + (a.ru || a.rdn ? '<span class="u">▲' + a.ru + '</span> <span class="d">▼' + a.rdn + '</span>' : '<span class="dash">—</span>') + '</span></td>' +
         '<td><span class="num">' + fmt(a.rent) + '</span></td>' +
         '<td class="noc"><span class="num">' + fmt(a.noc) + '</span></td>' +
-        '<td class="noc"><span class="num">' + fmt(a.enoc) + '</span></td>' +
         '<td><span class="num">' + (a.pre ? fmt(a.pre) : '<span class="dash">—</span>') + '</span></td></tr>';
     }
     var tb = document.querySelector('#zones tbody');

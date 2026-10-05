@@ -192,6 +192,8 @@ td.name{min-width:150px}
 #zones td.name{min-width:84px}
 #zones .dvbar{width:56px}
 #zones .delta{min-width:58px}
+/* 설명 문장은 표와 같은 폭까지 */
+.dek,.sec-note,footer p{max-width:none}
 /* 빌딩명 → 지도 선택 */
 .maplink{font:inherit;font-weight:600;color:var(--ink);background:none;border:0;padding:0;cursor:pointer;text-align:left;text-decoration:underline;text-decoration-color:var(--line);text-underline-offset:3px}
 .maplink:hover{color:var(--accent);text-decoration-color:var(--accent)}
@@ -213,7 +215,7 @@ td.name{min-width:150px}
     <div class="eyebrow" id="eyebrow">Office Leasing Monitor</div>
     <h1>권역별 임대 동향</h1>
     <div class="rule"></div>
-    <p class="dek">매달 받는 임대대행사 안내문을 빌딩 단위로 합쳐, 권역별 공실과 호가가 직전 달보다 어떻게 움직였는지 비교합니다. 권역을 누르면 그 권역의 신규 공실, 소진, 호가 변경 빌딩이 아래에 나옵니다.</p>
+    <p class="dek">매달 받는 임대대행사 안내문을 빌딩 단위로 합쳐, 권역별 공실과 호가가 직전 달보다 어떻게 움직였는지 비교합니다.<br>권역을 누르면 그 권역의 신규 공실, 소진, 호가 변경 빌딩이 아래에 나옵니다.</p>
     <div class="meta" id="meta"></div>
   </header>
 
@@ -226,7 +228,7 @@ td.name{min-width:150px}
 
   <section>
     <h2>권역 요약 <span class="count" id="zcount"></span></h2>
-    <p class="sec-note">공실은 <b>현재 임대 가능한 면적</b>(임대면적, 평)이고 준공 전 선임대 물량은 따로 셉니다. 순증감은 두 달 모두 올린 대행사끼리 비교한 빌딩별 증감을 더한 값입니다. 호가 변동은 같은 빌딩의 임대료가 1% 이상 바뀐 건수입니다. <b>전체</b> 행을 누르면 모든 권역의 빌딩을 한 번에 검색할 수 있습니다.</p>
+    <p class="sec-note">공실은 <b>현재 임대 가능한 면적</b>(임대면적, 평)이고 준공 전 선임대 물량은 따로 셉니다. 순증감은 두 달 모두 올린 대행사끼리 비교한 빌딩별 증감을 더한 값이고, 전월 공실은 당월과 같은 판독 기준으로 맞춰 <b>전월 공실 + 순증감 = 당월 공실</b>이 되도록 했습니다. 호가 변동은 같은 빌딩의 임대료가 1% 이상 바뀐 건수입니다. <b>전체</b> 행을 누르면 모든 권역의 빌딩을 한 번에 검색할 수 있습니다.</p>
     <div class="tablebox">
       <table id="zones">
         <thead><tr>
@@ -463,7 +465,14 @@ td.name{min-width:150px}
     return {
       tracked: rows.length,
       vac: vacCur.length,
-      a1: sum(rows.filter(function(r){ return r.b1.length; }).map(function(r){ return r.a1; })),
+      // 전월 공실은 당월과 같은 판독 기준으로 보정: 원문이 그대로인 빌딩은 당월 값, 실제로 바뀐 빌딩만 변화량을 되돌린다
+      // → 전월 공실 + 순증감 = 당월 공실 이 항상 성립
+      a1: sum(rows.map(function(r){
+        var real = r.type && r.type !== 'newpre' && counted(r);
+        if (r.b1.length && r.b2.length) return (r.a2 || 0) - (real ? r.d : 0);
+        if (r.b1.length) return real ? r.a1 : 0;     // 목록 제외: 확인된 경우만 전월에 남긴다
+        return 0;                                    // 신규 등장: 전월 0
+      })),
       a2: sum(cur.map(function(r){ return r.a2; })),
       net: sum(rows.filter(function(r){ return r.type && r.type !== 'newpre' && counted(r); }).map(function(r){ return r.d; })),
       nNew: rows.filter(isNew).length, aNew: sum(rows.filter(isNew).map(function(r){ return r.d; })),

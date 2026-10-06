@@ -206,6 +206,14 @@ td.name{min-width:150px}
 #mapPop a.naver{background:#03C75A;border-color:#03C75A;color:#fff}
 #mapPop a:hover{filter:brightness(.95)}
 #mapPop .mp-note{font-size:11px;color:var(--ink-3);line-height:1.5}
+#mapPop .mp-sec{font-family:"IBM Plex Mono",monospace;font-size:10.5px;letter-spacing:.08em;color:var(--ink-3)}
+#mapPop .bks{display:flex;flex-wrap:wrap;gap:5px}
+#mapPop .bk{font-size:12px;padding:3px 8px;border-radius:999px;background:var(--surface-2);border:1px solid var(--line-soft);color:var(--ink)}
+#mapPop .bk.new{background:var(--up-soft);border-color:transparent;color:var(--up)}
+#mapPop .bk.gone{background:var(--down-soft);border-color:transparent;color:var(--down);text-decoration:line-through}
+.nbbtn{font:inherit;font-family:"IBM Plex Mono",monospace;font-weight:500;background:var(--surface-2);border:1px solid var(--line);border-radius:3px;padding:2px 9px;cursor:pointer;color:var(--ink)}
+.nbbtn:hover{border-color:var(--accent);color:var(--accent)}
+.nbbtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){*{transition:none !important}}
 @media (max-width:640px){.wrap{padding:28px 16px 60px;gap:28px}.stat .v{font-size:21px}}
 </style>
@@ -726,7 +734,7 @@ td.name{min-width:150px}
         '<td class="noc"><span class="num">' + fmt(r.noc) + '</span>' + (r.b.eff ? '<span class="sub">전용률 ' + r.b.eff + '%</span>' : '') + '</td>' +
         '<td><input class="numin' + (r.rf != null ? ' set' : '') + '" type="number" min="0" max="11" step="0.5" placeholder="0" data-id="' + esc(r.id) + '" value="' + (r.rf != null ? r.rf : '') + '" aria-label="' + esc(r.n) + ' 연간 Rent Free 개월 수"></td>' +
         '<td class="noc"><span class="num" data-enoc="' + esc(r.id) + '">' + fmt(r.enoc) + '</span>' + (r.noc != null && r.enoc != null && r.enoc < r.noc ? '<span class="sub">NOC 대비 ' + sgn((r.enoc / r.noc - 1) * 100, 1) + '%</span>' : '') + '</td>' +
-        '<td><span class="num">' + r.nb + '</span></td></tr>';
+        '<td><button type="button" class="nbbtn num" data-id="' + esc(r.id) + '" title="' + esc(Object.keys(r.b.s[m2] || r.b.s[m1] || {}).map(bname).join(', ')) + '">' + r.nb + '</button></td></tr>';
     }).join('') || '<tr><td colspan="13" style="text-align:left;color:var(--ink-3)">조건에 맞는 빌딩이 없습니다.</td></tr>';
     document.getElementById('bmore').textContent = list.length > LIMIT ? list.length + '동 중 ' + LIMIT + '동 표시 · 검색으로 좁혀 보세요' : list.length + '동';
 
@@ -782,6 +790,29 @@ td.name{min-width:150px}
   var byBid = {}; D.buildings.forEach(function(b){ byBid[b.id] = b; });
   var pop = document.createElement('div'); pop.id = 'mapPop'; pop.hidden = true; pop.setAttribute('role', 'dialog'); document.body.appendChild(pop);
   function closePop(){ pop.hidden = true; }
+  function placePop(btn){
+    var r = btn.getBoundingClientRect();
+    pop.hidden = false;
+    var left = Math.min(window.scrollX + r.left, window.scrollX + document.documentElement.clientWidth - pop.offsetWidth - 12);
+    pop.style.left = Math.max(window.scrollX + 8, left) + 'px';
+    pop.style.top = (window.scrollY + r.bottom + 6) + 'px';
+  }
+  // 대행사 수 클릭 → 게재 대행사 목록 (당월·전월, 신규·제외 표시)
+  document.getElementById('bldgs').addEventListener('click', function(e){
+    var nb = e.target.closest('.nbbtn'); if (!nb) return;
+    e.stopPropagation();
+    var b = byBid[nb.dataset.id]; if (!b) return;
+    var m1 = pairs[state.pair][0], m2 = pairs[state.pair][1];
+    var k1 = Object.keys(b.s[m1] || {}), k2 = Object.keys(b.s[m2] || {});
+    function chip(k, tag){ return '<span class="bk' + (tag ? ' ' + tag : '') + '">' + esc(bname(k)) + (tag === 'new' ? ' · 신규' : tag === 'gone' ? ' · 제외' : '') + '</span>'; }
+    var cur = k2.map(function(k){ return chip(k, k1.indexOf(k) < 0 ? 'new' : ''); }).join('');
+    var gone = k1.filter(function(k){ return k2.indexOf(k) < 0; }).map(function(k){ return chip(k, 'gone'); }).join('');
+    pop.innerHTML = '<div class="mp-name">' + esc(b.n) + '</div>' +
+      '<div class="mp-sec">' + mlabel(m2) + ' 게재 ' + k2.length + '곳</div><div class="bks">' + (cur || '<span class="mp-note">게재 없음</span>') + '</div>' +
+      (gone ? '<div class="mp-sec">' + mlabel(m1) + '에는 있었으나 빠진 대행사</div><div class="bks">' + gone + '</div>' : '') +
+      '<div class="mp-note">' + mlabel(m1) + ' 게재 ' + k1.length + '곳 · 비교에서 제외된 대행사도 이름은 표시합니다.</div>';
+    placePop(nb);
+  });
   document.getElementById('bldgs').addEventListener('click', function(e){
     var btn = e.target.closest('.maplink'); if (!btn) return;
     e.stopPropagation();
